@@ -47,7 +47,7 @@ ADMIN_KEY = st.secrets.get("ADMIN_KEY", "")
 OCCUPANCY_SNAPSHOT_PATH = "occupancy_snapshot.json"
 
 OFFICE_LOCATIONS = {
-    "Thessaloniki": "Thessaloniki,GR",
+    "Thessaloniki": {"lat": 40.566848672247765, "lon": 22.986678738493765},
 }
 
 SANI_RESORT_LOCATIONS = {
