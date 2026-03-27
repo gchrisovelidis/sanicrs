@@ -37,8 +37,8 @@ st.markdown(
 # Config
 # -----------------------
 TIMEZONE = "Europe/Athens"
-LOGO_PATH = "logo.png"
-GREETING_FADE_SECONDS = 3
+LOGO_PATH = "sr_logo.png"
+GREETING_FADE_SECONDS = 4
 
 API_KEY = st.secrets.get("API_KEY", "")
 QUOTES_API_KEY = st.secrets.get("QUOTES_API_KEY", "")
@@ -998,7 +998,7 @@ html_template = Template(
         }
 
         .logo img {
-            width: 210px;
+            width: 240px;
             max-width: 60vw;
             height: auto;
             pointer-events: none;
