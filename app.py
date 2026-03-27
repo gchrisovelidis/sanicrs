@@ -51,7 +51,7 @@ OFFICE_LOCATIONS = {
 }
 
 SANI_RESORT_LOCATIONS = {
-    "Halkidiki": "Sani, Chalkidiki, Greece",
+    "Halkidiki": {"lat": 40.098241312260946, "lon": 23.31187445234182},
 }
 
 BANK_HOLIDAYS = [
@@ -214,11 +214,13 @@ def extract_occupancy_snapshot_from_xls(file_bytes: bytes) -> dict:
         range_values = read_vertical_range_from_sheet(df, cfg["range"])
         avg_value = read_single_cell_from_sheet(df, cfg["avg_cell"])
 
+        non_zero_values = [v for v in range_values if v > 0]
+
         if not range_values and avg_value is None:
             continue
 
         snapshot[cfg["property_name"]] = {
-            "min": round(min(range_values), 2) if range_values else None,
+            "min": round(min(non_zero_values), 2) if non_zero_values else None,
             "max": round(max(range_values), 2) if range_values else None,
             "avg": round(avg_value, 2) if avg_value is not None else None,
             "sheet": sheet_name,
@@ -402,21 +404,26 @@ def get_weather_condition_class(weather: str) -> str:
 
 
 @st.cache_data(ttl=600, show_spinner=False)
-def fetch_weather(query: str, api_key: str) -> dict:
+def fetch_weather(location: dict, api_key: str) -> dict:
     url = "https://api.openweathermap.org/data/2.5/weather"
     params = {
-        "q": query,
         "appid": api_key,
         "units": "metric",
     }
+
+    if "q" in location:
+        params["q"] = location["q"]
+    else:
+        params["lat"] = location["lat"]
+        params["lon"] = location["lon"]
+
     response = requests.get(url, params=params, timeout=10)
     return {
         "status_code": response.status_code,
         "json": response.json(),
     }
 
-
-def get_weather_for_city(query: str) -> dict:
+def get_weather_for_city(location: dict) -> dict:
     if not API_KEY:
         return {
             "temp": "—",
@@ -428,7 +435,7 @@ def get_weather_for_city(query: str) -> dict:
         }
 
     try:
-        result = fetch_weather(query, API_KEY)
+        result = fetch_weather(location, API_KEY)
         status_code = result["status_code"]
         data = result["json"]
 
@@ -444,7 +451,6 @@ def get_weather_for_city(query: str) -> dict:
 
         temp = round(data["main"]["temp"])
         weather = data["weather"][0]["main"]
-        icon = get_weather_icon_svg(weather)
 
         return {
             "temp": f"{temp}°C",
@@ -452,7 +458,7 @@ def get_weather_for_city(query: str) -> dict:
             "temp_class": get_weather_temp_class(temp),
             "weather": weather,
             "condition_class": get_weather_condition_class(weather),
-            "icon": icon,
+            "icon": get_weather_icon_svg(weather),
         }
 
     except Exception:
@@ -465,11 +471,10 @@ def get_weather_for_city(query: str) -> dict:
             "icon": get_weather_icon_svg("Unavailable"),
         }
 
-
 def render_weather_rows(locations: dict, office: bool = False) -> str:
     rows = []
-    for label, query in locations.items():
-        info = get_weather_for_city(query)
+    for label, location in locations.items():
+        info = get_weather_for_city(location)
         row_class = "office-row" if office else "weather-row"
         rows.append(
             f"""
