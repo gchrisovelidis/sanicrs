@@ -37,7 +37,8 @@ st.markdown(
 # Config
 # -----------------------
 TIMEZONE = "Europe/Athens"
-LOGO_PATH = "sr_logo.png"
+LIGHT_LOGO_PATH = "sr_logo.png"
+DARK_LOGO_PATH = "sr_logo_white.png"
 GREETING_FADE_SECONDS = 4
 
 API_KEY = st.secrets.get("API_KEY", "")
@@ -864,7 +865,9 @@ quote_html = f"""
 # Logo
 # -----------------------
 logo_html = ""
-logo_b64 = get_logo_base64(LOGO_PATH)
+current_logo_path = DARK_LOGO_PATH if dark_mode else LIGHT_LOGO_PATH
+logo_b64 = get_logo_base64(current_logo_path)
+
 if logo_b64:
     logo_html = f"""
         <div class="logo">
