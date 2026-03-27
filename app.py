@@ -142,7 +142,11 @@ def normalize_percent_value(value):
     except (TypeError, ValueError):
         return None
 
-    if 0 <= num <= 1:
+    # Excel percentage cells may be stored as:
+    # 0.4083 -> 40.83%
+    # 1.0500 -> 105.00%
+    # while already-converted values may be 40.83
+    if 0 <= num <= 2:
         return num * 100
 
     return num
